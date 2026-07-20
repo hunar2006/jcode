@@ -908,12 +908,12 @@ pub(crate) fn push_surface(
     focus_pulse: f32,
     size: PhysicalSize<u32>,
 ) {
-    let accent = panel_accent_color(color_index, focused);
+    let _accent = panel_accent_color(color_index, focused);
     push_rounded_rect(
         vertices,
         rect,
         PANEL_RADIUS,
-        with_alpha(accent, if focused { 0.105 } else { 0.055 }),
+        BG_RAISED,
         size,
     );
     push_rounded_rect(
@@ -921,18 +921,18 @@ pub(crate) fn push_surface(
         Rect {
             x: rect.x,
             y: rect.y,
-            width: 5.0_f32.min(rect.width),
+            width: RAIL_W.min(rect.width),
             height: rect.height,
         },
         PANEL_RADIUS,
-        with_alpha(accent, if focused { 0.78 } else { 0.46 }),
+        if focused { ACCENT } else { BORDER_DEFAULT },
         size,
     );
 
     let border = if focused {
-        accent
+        PANE_BORDER_ACTIVE
     } else {
-        with_alpha(accent, 0.62)
+        BORDER_DEFAULT
     };
 
     let stroke_width = if focused {
@@ -955,23 +955,8 @@ pub(crate) fn push_surface(
 }
 
 pub(crate) fn panel_accent_color(color_index: usize, focused: bool) -> [f32; 4] {
-    const ACCENTS: [[f32; 4]; 8] = [
-        [0.550, 0.780, 1.000, 1.0],
-        [0.820, 0.660, 1.000, 1.0],
-        [0.560, 0.900, 0.640, 1.0],
-        [1.000, 0.760, 0.420, 1.0],
-        [0.520, 0.880, 0.940, 1.0],
-        [1.000, 0.620, 0.720, 1.0],
-        [0.760, 0.780, 0.880, 1.0],
-        [0.920, 0.850, 0.500, 1.0],
-    ];
-    let mut color = ACCENTS[color_index % ACCENTS.len()];
-    if !focused {
-        color[0] *= 0.72;
-        color[1] *= 0.72;
-        color[2] *= 0.72;
-    }
-    color
+    let _ = color_index;
+    if focused { ACCENT } else { BORDER_DEFAULT }
 }
 
 pub(crate) fn with_alpha(mut color: [f32; 4], alpha: f32) -> [f32; 4] {

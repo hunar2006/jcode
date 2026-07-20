@@ -166,7 +166,7 @@ pub(crate) fn single_session_streaming_text_area_for_cached_body_viewport<'a>(
 ) -> TextArea<'a> {
     let layout = single_session_layout_for_total_lines(app, size, viewport.total_lines);
     let line_height = layout.metrics.body_line_height;
-    let left = PANEL_TITLE_LEFT_PADDING;
+    let left = single_session_content_left(size);
     let right = single_session_content_right(size) as i32;
     let body_top = layout.body.y;
     let top = body_top
@@ -254,7 +254,7 @@ pub(crate) fn single_session_text_areas_for_state(
         return Vec::new();
     }
 
-    let left = PANEL_TITLE_LEFT_PADDING;
+    let left = single_session_content_left(size);
     let right = single_session_content_right(size) as i32;
     let bottom = size.height.saturating_sub(PANEL_TITLE_TOP_PADDING as u32) as i32;
     let body_top = if welcome_handoff_visible {

@@ -8,6 +8,8 @@ use std::time::Duration;
 
 const TEMPORARY_DESKTOP_GALLERY_STATES: &[&str] = &[
     "empty",
+    "fresh",
+    "redesign-transcript",
     "markdown",
     "tool-running",
     "tool-success",
@@ -70,6 +72,25 @@ pub(super) fn temporary_app(state: &str) -> DesktopApp {
     )));
     match state {
         "empty" => app.set_status_label("empty fixture"),
+        "redesign-transcript" => {
+            app.messages.push(SingleSessionMessage::user(
+                "Restyle this desktop session and keep the interaction model intact.",
+            ));
+            app.messages.push(SingleSessionMessage::assistant(
+                "## Native transcript preview\n\nThe session surface uses a focused dark palette with **semantic states**, `inline code`, and [links](https://jcode.dev).\n\n> The Turn Rail stays quiet until it needs to communicate state.\n\n- markdown content\n- numbered and unordered structure\n\n| surface | state |\n| --- | --- |\n| composer | ready |\n\n```rust\nfn render_turn_rail(color: Color) {\n    draw_rect(color);\n}\n```",
+            ));
+            app.apply_session_event(session_launch::DesktopSessionEvent::ToolStarted {
+                id: Some("preview-success".to_string()),
+                name: "cargo check".to_string(),
+            });
+            app.apply_session_event(session_launch::DesktopSessionEvent::ToolFinished {
+                id: Some("preview-success".to_string()),
+                name: "cargo check".to_string(),
+                summary: "finished successfully".to_string(),
+                is_error: false,
+            });
+            app.set_status_label("redesign transcript preview");
+        }
         "markdown" => {
             app.messages.push(SingleSessionMessage::user(
                 "Render markdown, code, and tables.",

@@ -3,6 +3,8 @@ mod desktop_app_driver;
 mod desktop_benchmark;
 mod desktop_branding;
 pub(crate) use desktop_branding::*;
+mod desktop_theme;
+pub(crate) use desktop_theme::*;
 mod desktop_config;
 mod desktop_gallery;
 mod desktop_ipc;
@@ -145,12 +147,12 @@ const DESKTOP_RELOAD_HANDOFF_POLL_INTERVAL: Duration = Duration::from_millis(25)
 const DESKTOP_RELOAD_HANDOFF_TIMEOUT: Duration = Duration::from_secs(8);
 const DESKTOP_RELOAD_STARTUP_RELEASE_TIMEOUT: Duration = Duration::from_secs(3);
 const DESKTOP_RELOAD_MAX_RESTORED_DIMENSION: u32 = 32_768;
-const OUTER_PADDING: f32 = 12.0;
-const GAP: f32 = 10.0;
-const STATUS_BAR_HEIGHT: f32 = 30.0;
-const FOCUSED_BORDER_WIDTH: f32 = 2.0;
-const UNFOCUSED_BORDER_WIDTH: f32 = 1.5;
-const PANEL_RADIUS: f32 = 12.0;
+const OUTER_PADDING: f32 = 0.0;
+const GAP: f32 = 0.0;
+const STATUS_BAR_HEIGHT: f32 = STATUSBAR_H;
+const FOCUSED_BORDER_WIDTH: f32 = BORDER_W;
+const UNFOCUSED_BORDER_WIDTH: f32 = BORDER_W;
+const PANEL_RADIUS: f32 = RADIUS_LG;
 const STATUS_RADIUS: f32 = 9.0;
 const ROUNDED_CORNER_SEGMENTS: usize = 6;
 const PANEL_FIT_TOLERANCE: f32 = 0.15;
@@ -179,7 +181,7 @@ const PANEL_BODY_TOP_PADDING: f32 = 38.0;
 const PANEL_BODY_LINE_GAP: f32 = 8.0;
 const SINGLE_SESSION_DRAFT_TOP_OFFSET: f32 = 158.0;
 const SINGLE_SESSION_CARET_WIDTH: f32 = 2.0;
-const SINGLE_SESSION_CARET_COLOR: [f32; 4] = [0.130, 0.150, 0.190, 0.92];
+const SINGLE_SESSION_CARET_COLOR: [f32; 4] = ACCENT;
 const SESSION_SPAWN_REFRESH_DELAY: Duration = Duration::from_millis(350);
 const BACKGROUND_POLL_INTERVAL: Duration = Duration::from_millis(33);
 const BACKEND_REDRAW_FRAME_INTERVAL: Duration = Duration::from_millis(16);
@@ -420,7 +422,11 @@ async fn run() -> Result<()> {
         return desktop_gallery::launch_temporary_windows();
     }
     let fullscreen = args.iter().any(|arg| arg == "--fullscreen");
-    let desktop_gallery_state = desktop_gallery::state_from_args(&args);
+    let desktop_gallery_state = desktop_gallery::state_from_args(&args).or_else(|| {
+        std::env::var_os("JCODE_UI_PREVIEW")
+            .filter(|value| value != "0")
+            .map(|_| "redesign-transcript".to_string())
+    });
     let desktop_gallery = desktop_gallery_state.is_some();
     let process_role = desktop_process_role_from_args(args.iter().map(String::as_str));
     let desktop_mode = desktop_mode_from_args(args.iter().map(String::as_str));

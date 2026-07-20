@@ -9,12 +9,12 @@ pub(crate) fn push_single_session_surface_without_bottom_rule(
     focus_pulse: f32,
     size: PhysicalSize<u32>,
 ) {
-    let accent = panel_accent_color(color_index, true);
+    let _ = color_index;
     push_rounded_rect(
         vertices,
         rect,
         PANEL_RADIUS,
-        with_alpha(accent, 0.105),
+        BG_BASE,
         size,
     );
     push_rounded_rect(
@@ -22,16 +22,16 @@ pub(crate) fn push_single_session_surface_without_bottom_rule(
         Rect {
             x: rect.x,
             y: rect.y,
-            width: 5.0_f32.min(rect.width),
+            width: RAIL_W.min(rect.width),
             height: rect.height,
         },
         PANEL_RADIUS,
-        with_alpha(accent, 0.78),
+        BG_BASE,
         size,
     );
 
     let stroke_width = FOCUSED_BORDER_WIDTH + focus_pulse * 2.5;
-    push_top_and_side_surface_outline(vertices, rect, stroke_width, accent, size);
+    push_top_and_side_surface_outline(vertices, rect, stroke_width, BG_BASE, size);
     // Close the frame: a bottom stroke matching the top/side weight keeps the
     // window border symmetric instead of visually cropped at the bottom.
     push_rect(
@@ -42,7 +42,7 @@ pub(crate) fn push_single_session_surface_without_bottom_rule(
             width: rect.width,
             height: stroke_width.max(1.0).min(rect.height),
         },
-        accent,
+        BG_BASE,
         size,
     );
 
@@ -130,6 +130,18 @@ pub(crate) fn push_single_session_composer_chrome(
         return;
     }
 
+    push_rounded_rect(vertices, rect, RADIUS_LG, BG_RAISED, size);
+    push_panel_outline(vertices, rect, BORDER_W, BORDER_DEFAULT, size);
+    if visual.focus_opacity > 0.001 {
+        push_panel_outline(
+            vertices,
+            inset_rect(rect, -2.0),
+            BORDER_W,
+            with_alpha(ACCENT, 0.25 * visual.focus_opacity),
+            size,
+        );
+    }
+
     push_single_session_attachment_chips(vertices, app, size, rect, attachment_chip_motion);
 
     if visual.placeholder_opacity > 0.001 {
@@ -141,7 +153,7 @@ pub(crate) fn push_single_session_composer_chrome(
         push_rounded_rect(
             vertices,
             Rect {
-                x: PANEL_TITLE_LEFT_PADDING + prompt_width + 4.0,
+                x: single_session_content_left(size) + prompt_width + 4.0,
                 y: draft_top + line_height * 0.78,
                 width: rail_width,
                 height: 3.0,
@@ -156,10 +168,10 @@ pub(crate) fn push_single_session_composer_chrome(
     }
 
     if visual.submit_opacity > 0.001 {
-        let pill_height = 22.0 * visual.submit_scale.max(0.72);
-        let pill_width = 36.0 * visual.submit_scale.max(0.72);
-        let pill_x = single_session_content_right(size) - pill_width;
-        let pill_y = draft_top + (line_height - pill_height) * 0.5;
+        let pill_height = 28.0 * visual.submit_scale.max(0.72);
+        let pill_width = pill_height;
+        let pill_x = rect.x + rect.width - pill_width - 10.0;
+        let pill_y = rect.y + rect.height - pill_height - 10.0;
         let submit_color = mix_color(
             COMPOSER_SUBMIT_READY_COLOR,
             COMPOSER_SUBMIT_BUSY_COLOR,
@@ -173,7 +185,7 @@ pub(crate) fn push_single_session_composer_chrome(
                 width: pill_width,
                 height: pill_height,
             },
-            pill_height * 0.5,
+            RADIUS_MD,
             with_alpha(submit_color, submit_color[3] * visual.submit_opacity),
             size,
         );
@@ -187,7 +199,7 @@ pub(crate) fn push_single_session_composer_chrome(
                 width: pill_width * 0.36,
                 height: 2.0,
             },
-            [1.0, 1.0, 1.0, arrow_alpha],
+            with_alpha(TEXT_INVERSE, arrow_alpha),
             size,
         );
         push_rect(
@@ -198,7 +210,7 @@ pub(crate) fn push_single_session_composer_chrome(
                 width: 2.0,
                 height: 10.0,
             },
-            [1.0, 1.0, 1.0, arrow_alpha],
+            with_alpha(TEXT_INVERSE, arrow_alpha),
             size,
         );
     }
@@ -339,7 +351,7 @@ pub(crate) fn push_single_session_stdin_overlay_visual(
     }
     let typography = single_session_typography_for_scale(app.text_scale());
     let line_height = typography.body_size * typography.body_line_height;
-    let left = PANEL_TITLE_LEFT_PADDING - 10.0;
+    let left = single_session_content_left(size) - 10.0;
     let width = single_session_content_width(size) + 20.0;
     let body_top = single_session_body_top_for_app(app, size);
     let body_bottom = single_session_body_bottom_for_total_lines(app, size, target.line_count);

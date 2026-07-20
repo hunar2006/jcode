@@ -30,7 +30,7 @@ pub(crate) fn push_single_session_transcript_cards_from_viewport(
 ) {
     let typography = single_session_typography_for_scale(app.text_scale());
     let line_height = typography.body_size * typography.body_line_height;
-    let width = (single_session_content_right(size) - (PANEL_TITLE_LEFT_PADDING - 6.0)).max(1.0);
+    let width = (single_session_content_right(size) - (single_session_content_left(size) - 6.0)).max(1.0);
     let body_top = single_session_body_top_for_app(app, size);
     let body_bottom = single_session_body_bottom_for_total_lines(app, size, total_lines);
 
@@ -89,7 +89,7 @@ pub(crate) fn push_single_session_transcript_message_highlights_from_viewport(
 
     let typography = single_session_typography_for_scale(app.text_scale());
     let line_height = typography.body_size * typography.body_line_height;
-    let width = (single_session_content_right(size) - (PANEL_TITLE_LEFT_PADDING - 7.0)).max(1.0);
+    let width = (single_session_content_right(size) - (single_session_content_left(size) - 7.0)).max(1.0);
     let body_top = single_session_body_top_for_app(app, size);
     let body_bottom = single_session_body_bottom_for_total_lines(app, size, total_lines);
 
@@ -128,7 +128,7 @@ pub(crate) fn push_single_session_transcript_message_highlight(
         return;
     };
     let rect = Rect {
-        x: PANEL_TITLE_LEFT_PADDING - 7.0,
+        x: single_session_content_left(context.size) - 7.0,
         y: context.body_top
             + context.top_offset_pixels
             + run.line as f32 * context.line_height
@@ -229,7 +229,7 @@ pub(crate) fn push_single_session_transcript_card(
         return;
     }
     let rect = Rect {
-        x: PANEL_TITLE_LEFT_PADDING - 6.0,
+        x: single_session_content_left(context.size) - 6.0,
         y: context.body_top
             + context.top_offset_pixels
             + run.line as f32 * context.line_height
@@ -245,7 +245,7 @@ pub(crate) fn push_single_session_transcript_card(
     push_rounded_rect(
         vertices,
         rect,
-        7.0,
+        RADIUS_MD,
         transcript_card_alpha(color, visual.opacity),
         context.size,
     );
@@ -282,14 +282,14 @@ pub(crate) fn push_single_session_tool_cards_from_viewport(
 ) {
     let typography = single_session_typography_for_scale(app.text_scale());
     let line_height = typography.body_size * typography.body_line_height;
-    let width = (single_session_content_right(size) - (PANEL_TITLE_LEFT_PADDING - 10.0)).max(1.0);
+    let width = (single_session_content_right(size) - (single_session_content_left(size) - 10.0)).max(1.0);
     let body_top = single_session_body_top_for_app(app, size);
     let body_bottom = single_session_body_bottom_for_total_lines(app, size, total_lines);
     let pulse = active_tool_card_pulse(motion_seconds);
 
     for run in single_session_tool_card_runs(&viewport.lines) {
         let rect = Rect {
-            x: PANEL_TITLE_LEFT_PADDING - 10.0,
+            x: single_session_content_left(size) - 10.0,
             y: body_top + viewport.top_offset_pixels + run.line as f32 * line_height + 2.0,
             width,
             height: (run.line_count as f32 * line_height - 4.0).max(1.0),
@@ -306,7 +306,7 @@ pub(crate) fn push_single_session_tool_cards_from_viewport(
     if let Some(tool_motion) = tool_motion {
         for (run, visual) in tool_motion.exiting() {
             let rect = Rect {
-                x: PANEL_TITLE_LEFT_PADDING - 10.0,
+                x: single_session_content_left(size) - 10.0,
                 y: body_top + viewport.top_offset_pixels + run.line as f32 * line_height + 2.0,
                 width,
                 height: (run.line_count as f32 * line_height - 4.0).max(1.0),

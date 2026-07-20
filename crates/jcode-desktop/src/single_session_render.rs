@@ -605,17 +605,21 @@ fn build_single_session_vertices_with_cached_body_internal(
     vertices
 }
 
+pub(crate) fn single_session_content_left(size: PhysicalSize<u32>) -> f32 {
+    let width = (size.width as f32 - MARGIN_MIN * 2.0).clamp(1.0, COLUMN_MAX);
+    ((size.width as f32 - width) * 0.5).max(MARGIN_MIN)
+}
+
 fn single_session_scrollbar_track_x(size: PhysicalSize<u32>) -> f32 {
-    size.width as f32 - PANEL_TITLE_LEFT_PADDING - 4.0
+    single_session_content_left(size) + single_session_content_width(size) + SINGLE_SESSION_SCROLLBAR_GAP
 }
 
-fn single_session_content_right(size: PhysicalSize<u32>) -> f32 {
-    (single_session_scrollbar_track_x(size) - SINGLE_SESSION_SCROLLBAR_GAP)
-        .max(PANEL_TITLE_LEFT_PADDING + 1.0)
+pub(crate) fn single_session_content_right(size: PhysicalSize<u32>) -> f32 {
+    single_session_content_left(size) + single_session_content_width(size)
 }
 
-fn single_session_content_width(size: PhysicalSize<u32>) -> f32 {
-    (single_session_content_right(size) - PANEL_TITLE_LEFT_PADDING).max(1.0)
+pub(crate) fn single_session_content_width(size: PhysicalSize<u32>) -> f32 {
+    (size.width as f32 - MARGIN_MIN * 2.0).clamp(1.0, COLUMN_MAX)
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -694,7 +698,7 @@ fn single_session_layout_from_bounds(
     let activity_lane = (activity_reserved_height > 0.0).then(|| {
         let activity_top = (body_base_bottom - activity_reserved_height).max(body_top);
         Rect {
-            x: PANEL_TITLE_LEFT_PADDING,
+            x: single_session_content_left(size),
             y: activity_top,
             width: single_session_content_width(size),
             height: (body_base_bottom - activity_top).max(0.0),
@@ -706,14 +710,14 @@ fn single_session_layout_from_bounds(
 
     SingleSessionLayout {
         body: Rect {
-            x: PANEL_TITLE_LEFT_PADDING,
+            x: single_session_content_left(size),
             y: body_top,
             width: single_session_content_width(size),
             height: (body_bottom - body_top).max(0.0),
         },
         draft_top,
         composer: Rect {
-            x: PANEL_TITLE_LEFT_PADDING - 10.0,
+            x: single_session_content_left(size) - 10.0,
             y: draft_top - 9.0,
             width: single_session_content_width(size) + 20.0,
             height: composer_height,
@@ -743,11 +747,11 @@ fn inline_widget_bottom_limit_for_layout(
 
 fn single_session_composer_height(
     size: PhysicalSize<u32>,
-    metrics: SingleSessionLayoutMetrics,
+    _metrics: SingleSessionLayoutMetrics,
     visual: ComposerMotionVisual,
 ) -> f32 {
-    (visual.height_lines.max(1.0) * metrics.composer_line_height + 18.0)
-        .min((size.height as f32 * 0.34).max(metrics.composer_line_height + 18.0))
+    (visual.height_lines.max(1.0) * COMPOSER_LINE_STEP + 18.0)
+        .clamp(COMPOSER_MIN_H, COMPOSER_MAX_H.min((size.height as f32 * 0.34).max(COMPOSER_MIN_H)))
 }
 
 #[inline]

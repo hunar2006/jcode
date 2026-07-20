@@ -446,7 +446,7 @@ impl ColorTransition {
         let progress = (now.saturating_duration_since(started_at).as_secs_f32()
             / self.duration.as_secs_f32())
         .clamp(0.0, 1.0);
-        let eased = ease_out_cubic(progress);
+        let eased = cubic_bezier(progress, crate::desktop_theme::EASE_STANDARD);
         for index in 0..self.current.len() {
             self.current[index] = lerp(self.start[index], self.target[index], eased);
         }
@@ -679,6 +679,24 @@ fn color_target_changed(previous: [f32; 4], next: [f32; 4]) -> bool {
 
 pub(crate) fn ease_out_cubic(progress: f32) -> f32 {
     1.0 - (1.0 - progress).powi(3)
+}
+
+pub(crate) fn cubic_bezier(progress: f32, curve: [f32; 4]) -> f32 {
+    let t = progress.clamp(0.0, 1.0);
+    let sample = |t: f32, a: f32, b: f32| {
+        3.0 * (1.0 - t).powi(2) * t * a + 3.0 * (1.0 - t) * t.powi(2) * b + t.powi(3)
+    };
+    let slope = |t: f32, a: f32, b: f32| {
+        3.0 * (1.0 - t).powi(2) * a + 6.0 * (1.0 - t) * t * (b - a) + 3.0 * t.powi(2) * (1.0 - b)
+    };
+    let mut u = t;
+    for _ in 0..4 {
+        let derivative = slope(u, curve[0], curve[2]);
+        if derivative.abs() > 0.0001 {
+            u = (u - (sample(u, curve[0], curve[2]) - t) / derivative).clamp(0.0, 1.0);
+        }
+    }
+    sample(u, curve[1], curve[3])
 }
 
 pub(crate) fn lerp(start: f32, end: f32, progress: f32) -> f32 {
