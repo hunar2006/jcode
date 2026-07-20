@@ -1,3 +1,13 @@
+//! Synchronous jcode server IPC over a Unix domain socket.
+//!
+//! Everything in this file is built on `std::os::unix::net::UnixStream` and
+//! has no Windows equivalent yet (Windows desktop sessions currently fall
+//! back to the `#[cfg(not(unix))]` "not implemented on this platform yet"
+//! stubs in `session_launch.rs`). Gating the whole file here, rather than
+//! item-by-item, keeps every private helper out of non-unix builds without
+//! needing to hunt down each one individually.
+#![cfg(unix)]
+
 use anyhow::{Context, Result};
 use serde_json::{Value, json};
 use std::io::{self, BufRead, BufReader, Read, Write};

@@ -67,6 +67,7 @@ mod events;
 mod server_io;
 mod terminal;
 
+#[cfg(unix)]
 use server_io::{
     DrainOutcome, connect_server_with_retry, connect_server_with_retry_path, drain_session_events,
     ensure_server_running, establish_session_id, read_control_response, read_model_catalog,
